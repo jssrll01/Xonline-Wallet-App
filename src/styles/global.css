@@ -1,0 +1,118 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg-primary: #05080f;
+  --bg-secondary: #0d1220;
+  --bg-card: rgba(26, 34, 51, 0.7);
+  --bg-hover: rgba(35, 45, 66, 0.85);
+  --accent: #00d9ff;
+  --text-primary: #ffffff;
+  --text-secondary: #8892a6;
+  --border: rgba(42, 52, 71, 0.8);
+  --success: #00e676;
+  --danger: #ff4757;
+}
+
+html, body { overscroll-behavior-y: none; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #05080f;
+  color: var(--text-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+  text-rendering: optimizeLegibility;
+}
+
+#root { position: relative; min-height: 100vh; }
+
+button, a, input { font-family: inherit; font-size: 1rem; }
+button { cursor: pointer; border: none; }
+button:active { transform: scale(0.98); }
+
+/* Faster image / svg rendering */
+img, svg { display: block; max-width: 100%; }
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ==================== PAGE ==================== */
+.page {
+  padding: 2rem 2rem 4rem;
+  max-width: 600px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+  will-change: transform, opacity;
+}
+
+/* ==================== TOGGLE ==================== */
+.toggle-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: rgba(26, 34, 51, 0.65);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 14px;
+  padding: 5px;
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.toggle-group button {
+  padding: 0.7rem;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.25s ease;
+}
+
+.toggle-group button:hover:not(.active) { color: var(--text-primary); }
+
+.toggle-group button.active {
+  background: linear-gradient(135deg, #00d9ff, #0066ff);
+  color: white;
+  box-shadow: 0 6px 20px rgba(0, 217, 255, 0.35);
+}
+
+/* ==================== BUTTONS ==================== */
+.secondary-btn {
+  background: rgba(35, 45, 66, 0.9);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  padding: 0.85rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.secondary-btn:hover {
+  border-color: rgba(0, 217, 255, 0.3);
+  color: var(--accent);
+}
+
+/* Safe area for iPhone notch */
+@supports (padding: max(0px)) {
+  .page {
+    padding-left: max(2rem, env(safe-area-inset-left));
+    padding-right: max(2rem, env(safe-area-inset-right));
+    padding-bottom: max(4rem, env(safe-area-inset-bottom));
+  }
+}

@@ -1,0 +1,34 @@
+# Xonline Wallet App
+
+A modern, installable PWA wallet for crediting funds via e-wallet (GCash, Maya, PayPal) and banks (GoTyme, BPI).
+
+## Features
+
+- 🔐 Access-code authentication (`1010`) with biometric unlock (WebAuthn)
+- 📱 Installable PWA (works offline, home-screen icon)
+- 🌌 Cosmic animated background — star field, shooting stars, orbiting satellite
+- 📸 QR code for each payment method
+- ⚡ Auto-logout after 2 minutes of inactivity
+- 🌐 Live network status bar
+- ⚠️ Screenshot detection warning
+- ✨ Smooth page transitions with Framer Motion
+
+## Tech Stack
+
+- React 18
+- Vite 5
+- React Router v6
+- Framer Motion
+- qrcode.react
+- vite-plugin-pwa
+
+## Getting Started
+
+```bash
+npm install
+npm run dev
+npm run build
+npm run preview
+
+License
+MIT

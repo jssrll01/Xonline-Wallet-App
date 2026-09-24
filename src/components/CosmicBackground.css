@@ -1,0 +1,161 @@
+.cosmic-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 20% 10%, #0d1730 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 90%, #061027 0%, transparent 55%),
+    linear-gradient(180deg, #050810 0%, #0a0e1a 50%, #06080f 100%);
+  pointer-events: none;
+}
+
+.cosmic-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Nebula glows */
+.nebula {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.nebula-1 {
+  width: 500px;
+  height: 500px;
+  top: -120px;
+  left: -120px;
+  background: radial-gradient(circle, rgba(0, 217, 255, 0.35), transparent 70%);
+  animation: nebulaFloat 22s ease-in-out infinite;
+}
+
+.nebula-2 {
+  width: 620px;
+  height: 620px;
+  bottom: -180px;
+  right: -180px;
+  background: radial-gradient(circle, rgba(120, 80, 255, 0.32), transparent 70%);
+  animation: nebulaFloat 30s ease-in-out infinite reverse;
+}
+
+@keyframes nebulaFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(40px, -30px) scale(1.08); }
+}
+
+/* ============ SATELLITE ORBIT ============ */
+.satellite-orbit {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 78vmin;
+  height: 78vmin;
+  margin-left: -39vmin;
+  margin-top: -39vmin;
+  border-radius: 50%;
+  animation: orbitRotate 45s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes orbitRotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.satellite {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: satelliteSpin 8s ease-in-out infinite;
+}
+
+@keyframes satelliteSpin {
+  0%, 100% { transform: translateX(-50%) rotate(-15deg); }
+  50%      { transform: translateX(-50%) rotate(15deg); }
+}
+
+.satellite-body {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  filter: drop-shadow(0 0 12px rgba(0, 217, 255, 0.7));
+}
+
+.satellite-core {
+  width: 14px;
+  height: 14px;
+  background: linear-gradient(135deg, #e8f7ff, #8ec9ff);
+  border-radius: 3px;
+  position: relative;
+  box-shadow: inset 0 0 4px rgba(0, 100, 200, 0.6);
+}
+
+.satellite-antenna {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 8px;
+  background: #b6e4ff;
+}
+
+.satellite-antenna::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00d9ff;
+  box-shadow: 0 0 8px #00d9ff;
+}
+
+.satellite-panel {
+  width: 18px;
+  height: 10px;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      #1d4d8f 0,
+      #1d4d8f 3px,
+      #0a2a5a 3px,
+      #0a2a5a 4px
+    );
+  border: 1px solid #4a8fd0;
+  border-radius: 1px;
+}
+
+.satellite-panel-left { margin-right: -1px; }
+.satellite-panel-right { margin-left: -1px; }
+
+.satellite-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 217, 255, 0.4), transparent 70%);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .satellite-orbit,
+  .satellite,
+  .nebula-1,
+  .nebula-2 {
+    animation: none;
+  }
+}

@@ -1,0 +1,46 @@
+.net-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  animation: netSlide 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes netSlide {
+  from { transform: translateY(-100%); }
+  to   { transform: translateY(0); }
+}
+
+.net-off {
+  background: linear-gradient(135deg, #b3261e, #8c1d16);
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(179, 38, 30, 0.4);
+}
+
+.net-back {
+  background: linear-gradient(135deg, #00b04a, #008f3c);
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(0, 176, 74, 0.4);
+}
+
+.net-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fff;
+  animation: netPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes netPulse {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 1; }
+}
