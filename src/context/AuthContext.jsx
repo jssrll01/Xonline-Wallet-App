@@ -3,8 +3,15 @@ import { createContext, useContext, useEffect, useRef, useState, useCallback } f
 const AuthContext = createContext(null);
 const STORAGE_KEY = 'xonline_auth';
 const BIO_KEY = 'xonline_bio_cred';
-const ACCESS_CODE = '1010';
-const IDLE_MS = 2 * 60 * 1000; // 2 minutes
+
+// Read from env — never hardcoded in source
+const ACCESS_CODE = import.meta.env.VITE_ACCESS_CODE;
+
+if (!ACCESS_CODE) {
+  console.warn('[Xonline] VITE_ACCESS_CODE is not set. Check .env.local');
+}
+
+const IDLE_MS = 2 * 60 * 1000;
 
 export function AuthProvider({ children }) {
   const [isAuthed, setIsAuthed] = useState(false);
@@ -12,7 +19,6 @@ export function AuthProvider({ children }) {
   const [bioAvailable, setBioAvailable] = useState(false);
   const idleTimer = useRef(null);
 
-  // Detect WebAuthn / biometric availability
   useEffect(() => {
     const check = async () => {
       try {
@@ -30,7 +36,6 @@ export function AuthProvider({ children }) {
     check();
   }, []);
 
-  // Restore session
   useEffect(() => {
     const saved = sessionStorage.getItem(STORAGE_KEY);
     if (saved === 'granted') setIsAuthed(true);
@@ -42,26 +47,21 @@ export function AuthProvider({ children }) {
     setIsAuthed(false);
   }, []);
 
-  // Idle timer — only runs when authed
   useEffect(() => {
     if (!isAuthed) {
       if (idleTimer.current) clearTimeout(idleTimer.current);
       return;
     }
-
     const reset = () => {
       if (idleTimer.current) clearTimeout(idleTimer.current);
       idleTimer.current = setTimeout(() => {
         logout();
-        // Optional toast via window event
         window.dispatchEvent(new CustomEvent('xonline:idle-logout'));
       }, IDLE_MS);
     };
-
     const events = ['mousemove', 'keydown', 'click', 'touchstart', 'scroll'];
     events.forEach((e) => window.addEventListener(e, reset, { passive: true }));
     reset();
-
     return () => {
       events.forEach((e) => window.removeEventListener(e, reset));
       if (idleTimer.current) clearTimeout(idleTimer.current);
@@ -69,6 +69,7 @@ export function AuthProvider({ children }) {
   }, [isAuthed, logout]);
 
   const login = useCallback((code) => {
+    if (!ACCESS_CODE) return { ok: false, error: 'Server not configured' };
     if (code === ACCESS_CODE) {
       sessionStorage.setItem(STORAGE_KEY, 'granted');
       setIsAuthed(true);
@@ -77,7 +78,6 @@ export function AuthProvider({ children }) {
     return { ok: false, error: 'Invalid access code' };
   }, []);
 
-  /** Register a biometric credential (device-bound). */
   const registerBiometric = useCallback(async (label = 'Xonline User') => {
     if (!bioAvailable || !window.PublicKeyCredential) {
       return { ok: false, error: 'Biometrics not available on this device' };
@@ -92,14 +92,10 @@ export function AuthProvider({ children }) {
         publicKey: {
           challenge,
           rp: { name: 'Xonline Wallet' },
-          user: {
-            id: userId,
-            name: label,
-            displayName: label,
-          },
+          user: { id: userId, name: label, displayName: label },
           pubKeyCredParams: [
-            { type: 'public-key', alg: -7 },   // ES256
-            { type: 'public-key', alg: -257 }, // RS256
+            { type: 'public-key', alg: -7 },
+            { type: 'public-key', alg: -257 },
           ],
           authenticatorSelection: {
             authenticatorAttachment: 'platform',
@@ -111,8 +107,7 @@ export function AuthProvider({ children }) {
         },
       });
 
-      const rawId = cred.rawId;
-      const b64 = btoa(String.fromCharCode(...new Uint8Array(rawId)));
+      const b64 = btoa(String.fromCharCode(...new Uint8Array(cred.rawId)));
       sessionStorage.setItem(BIO_KEY, b64);
       return { ok: true };
     } catch (e) {
@@ -122,7 +117,6 @@ export function AuthProvider({ children }) {
 
   const hasBiometric = !!sessionStorage.getItem(BIO_KEY);
 
-  /** Unlock using biometric credential. */
   const loginWithBiometric = useCallback(async () => {
     const stored = sessionStorage.getItem(BIO_KEY);
     if (!stored) return { ok: false, error: 'No biometric credential registered' };
@@ -130,18 +124,14 @@ export function AuthProvider({ children }) {
       const rawId = Uint8Array.from(atob(stored), (c) => c.charCodeAt(0));
       const challenge = new Uint8Array(32);
       crypto.getRandomValues(challenge);
-
       await navigator.credentials.get({
         publicKey: {
           challenge,
           timeout: 60000,
           userVerification: 'required',
-          allowCredentials: [
-            { id: rawId, type: 'public-key', transports: ['internal'] },
-          ],
+          allowCredentials: [{ id: rawId, type: 'public-key', transports: ['internal'] }],
         },
       });
-
       sessionStorage.setItem(STORAGE_KEY, 'granted');
       setIsAuthed(true);
       return { ok: true };
@@ -157,15 +147,9 @@ export function AuthProvider({ children }) {
   return (
     <AuthContext.Provider
       value={{
-        isAuthed,
-        loading,
-        login,
-        logout,
-        bioAvailable,
-        hasBiometric,
-        registerBiometric,
-        loginWithBiometric,
-        removeBiometric,
+        isAuthed, loading, login, logout,
+        bioAvailable, hasBiometric,
+        registerBiometric, loginWithBiometric, removeBiometric,
       }}
     >
       {children}
