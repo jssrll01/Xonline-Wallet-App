@@ -4,12 +4,8 @@ const AuthContext = createContext(null);
 const STORAGE_KEY = 'xonline_auth';
 const BIO_KEY = 'xonline_bio_cred';
 
-// Read from env — never hardcoded in source
-const ACCESS_CODE = import.meta.env.VITE_ACCESS_CODE;
-
-if (!ACCESS_CODE) {
-  console.warn('[Xonline] VITE_ACCESS_CODE is not set. Check .env.local');
-}
+// Access code — set here directly (no env required)
+const ACCESS_CODE = '1010';
 
 const IDLE_MS = 2 * 60 * 1000;
 
@@ -69,7 +65,6 @@ export function AuthProvider({ children }) {
   }, [isAuthed, logout]);
 
   const login = useCallback((code) => {
-    if (!ACCESS_CODE) return { ok: false, error: 'Server not configured' };
     if (code === ACCESS_CODE) {
       sessionStorage.setItem(STORAGE_KEY, 'granted');
       setIsAuthed(true);
@@ -87,7 +82,6 @@ export function AuthProvider({ children }) {
       crypto.getRandomValues(challenge);
       const userId = new Uint8Array(16);
       crypto.getRandomValues(userId);
-
       const cred = await navigator.credentials.create({
         publicKey: {
           challenge,
@@ -106,7 +100,6 @@ export function AuthProvider({ children }) {
           attestation: 'none',
         },
       });
-
       const b64 = btoa(String.fromCharCode(...new Uint8Array(cred.rawId)));
       sessionStorage.setItem(BIO_KEY, b64);
       return { ok: true };
