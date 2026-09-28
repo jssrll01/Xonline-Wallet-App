@@ -97,7 +97,6 @@
   border-radius: 1px;
 }
 
-/* Status pill */
 .wallet-status {
   display: inline-flex;
   align-items: center;
@@ -300,7 +299,6 @@
   -webkit-text-fill-color: transparent;
 }
 
-/* QR wrapper with enhanced corners */
 .qr-wrapper {
   position: relative;
   background: #ffffff;
@@ -363,6 +361,10 @@
   border-radius: 12px;
   overflow: hidden;
   background: #ffffff;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: default;
 }
 
 .qr-image {
@@ -374,11 +376,11 @@
   transition: opacity 0.4s ease;
   user-select: none;
   pointer-events: none;
+  -webkit-touch-callout: none;
 }
 
 .qr-image.loaded { opacity: 1; }
 
-/* Skeleton */
 .qr-skeleton {
   position: absolute;
   inset: 0;
@@ -449,6 +451,46 @@
   font-weight: 500;
   letter-spacing: 0.3px;
   margin-top: -0.25rem;
+}
+
+/* ============ SHARE & DOWNLOAD ROW ============ */
+.qr-action-row {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.qr-action-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  background: rgba(26, 34, 51, 0.7);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.9rem;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: all 0.25s ease;
+}
+
+.qr-action-btn svg { width: 16px; height: 16px; }
+
+.qr-action-btn:hover:not(:disabled) {
+  background: rgba(35, 45, 66, 0.9);
+  border-color: rgba(0, 217, 255, 0.35);
+  color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(0, 217, 255, 0.15);
+}
+
+.qr-action-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 /* ============ WALLET DETAIL CARD ============ */
@@ -542,95 +584,4 @@
   .qr-skeleton-cell {
     animation: none;
   }
-}
-
-/* ============ WATERMARK ON QR ============ */
-.qr-watermark {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 10px;
-}
-
-.qr-watermark-brand {
-  align-self: flex-start;
-  font-size: 0.6rem;
-  font-weight: 800;
-  color: rgba(10, 14, 26, 0.35);
-  letter-spacing: 0.5px;
-  padding: 2px 6px;
-  background: rgba(255, 255, 255, 0.5);
-  border-radius: 4px;
-  backdrop-filter: blur(2px);
-}
-
-.qr-watermark-x {
-  color: rgba(0, 100, 200, 0.55);
-}
-
-.qr-watermark-id {
-  align-self: flex-end;
-  font-size: 0.55rem;
-  font-weight: 700;
-  color: rgba(10, 14, 26, 0.4);
-  letter-spacing: 0.4px;
-  padding: 2px 6px;
-  background: rgba(255, 255, 255, 0.5);
-  border-radius: 4px;
-  backdrop-filter: blur(2px);
-}
-
-/* ============ SHARE & DOWNLOAD ROW ============ */
-.qr-action-row {
-  display: flex;
-  gap: 0.75rem;
-  width: 100%;
-}
-
-.qr-action-btn {
-  flex: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.85rem 1rem;
-  background: rgba(26, 34, 51, 0.7);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  color: var(--text-primary);
-  font-weight: 600;
-  font-size: 0.9rem;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  transition: all 0.25s ease;
-}
-
-.qr-action-btn svg { width: 16px; height: 16px; }
-
-.qr-action-btn:hover:not(:disabled) {
-  background: rgba(35, 45, 66, 0.9);
-  border-color: rgba(0, 217, 255, 0.35);
-  color: var(--accent);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 22px rgba(0, 217, 255, 0.15);
-}
-
-.qr-action-btn:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-/* Copy protection helpers */
-.qr-image,
-.qr-image-wrap {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  user-select: none;
-}
-
-.qr-image-wrap {
-  cursor: default;
 }

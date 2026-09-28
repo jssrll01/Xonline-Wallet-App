@@ -57,13 +57,12 @@ const WALLET_INFO = {
 const WALLET_ID = 'XN-1010-0707-1007';
 const MEMBER_SINCE = 'OCTOBER 2026';
 
-/* ---------- QR with skeleton loading + watermark + copy protection ---------- */
+/* ---------- QR with skeleton loading + copy protection ---------- */
 
-function QRWithSkeleton({ src, alt, walletId }) {
+function QRWithSkeleton({ src, alt }) {
   const [loaded, setLoaded] = useState(false);
   const [errored, setErrored] = useState(false);
 
-  // Copy protection
   const blockContextMenu = (e) => e.preventDefault();
   const blockDrag = (e) => e.preventDefault();
   const blockTouchCallout = (e) => e.preventDefault();
@@ -84,31 +83,19 @@ function QRWithSkeleton({ src, alt, walletId }) {
       {errored ? (
         <div className="qr-error">Failed to load QR</div>
       ) : (
-        <>
-          <img
-            src={src}
-            alt={alt}
-            className={`qr-image ${loaded ? 'loaded' : ''}`}
-            onLoad={() => setLoaded(true)}
-            onError={() => setErrored(true)}
-            loading="eager"
-            decoding="async"
-            draggable={false}
-            onContextMenu={blockContextMenu}
-            onDragStart={blockDrag}
-            onTouchStart={blockTouchCallout}
-          />
-
-          {/* Watermark overlay — visible only when image loaded */}
-          {loaded && (
-            <div className="qr-watermark" aria-hidden="true">
-              <div className="qr-watermark-brand">
-                <span className="qr-watermark-x">X</span>online
-              </div>
-              <div className="qr-watermark-id">{walletId}</div>
-            </div>
-          )}
-        </>
+        <img
+          src={src}
+          alt={alt}
+          className={`qr-image ${loaded ? 'loaded' : ''}`}
+          onLoad={() => setLoaded(true)}
+          onError={() => setErrored(true)}
+          loading="eager"
+          decoding="async"
+          draggable={false}
+          onContextMenu={blockContextMenu}
+          onDragStart={blockDrag}
+          onTouchStart={blockTouchCallout}
+        />
       )}
     </div>
   );
@@ -124,7 +111,6 @@ export default function Credit() {
 
   const selected = method ? WALLET_INFO[method] : null;
 
-  // Preload all QR images
   useEffect(() => {
     Object.values(WALLET_INFO).forEach((m) => {
       const img = new Image();
@@ -147,10 +133,7 @@ export default function Credit() {
   const handleDownload = async () => {
     if (!selected || downloading) return;
     setDownloading(true);
-    const res = await downloadQR(
-      selected.qr,
-      `xonline-${method}-qr.png`
-    );
+    const res = await downloadQR(selected.qr, `xonline-${method}-qr.png`);
     if (res.ok) toast.push('QR saved to downloads', 'success');
     else toast.push(res.error || 'Download failed', 'error');
     setDownloading(false);
@@ -303,11 +286,7 @@ export default function Credit() {
               <div className="qr-corner bl"><span /></div>
               <div className="qr-corner br"><span /></div>
 
-              <QRWithSkeleton
-                src={selected.qr}
-                alt={`${selected.label} QR`}
-                walletId={WALLET_ID}
-              />
+              <QRWithSkeleton src={selected.qr} alt={`${selected.label} QR`} />
             </motion.div>
 
             <motion.p
@@ -319,18 +298,13 @@ export default function Credit() {
               Scan with {selected.label} app
             </motion.p>
 
-            {/* Share & Download row */}
             <motion.div
               className="qr-action-row"
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.25, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             >
-              <button
-                className="qr-action-btn"
-                onClick={handleShare}
-                disabled={sharing}
-              >
+              <button className="qr-action-btn" onClick={handleShare} disabled={sharing}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="18" cy="5" r="3" />
                   <circle cx="6" cy="12" r="3" />
@@ -341,11 +315,7 @@ export default function Credit() {
                 <span>{sharing ? 'Sharing…' : 'Share'}</span>
               </button>
 
-              <button
-                className="qr-action-btn"
-                onClick={handleDownload}
-                disabled={downloading}
-              >
+              <button className="qr-action-btn" onClick={handleDownload} disabled={downloading}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                   <polyline points="7 10 12 15 17 10" />
