@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './Credit.css';
 
@@ -19,30 +19,35 @@ const WALLET_INFO = {
     label: 'GCash',
     number: '0945 440 8496',
     name: 'JESSRELL C.',
+    tag: 'E-Wallet',
     qr: 'https://res.cloudinary.com/bvw3okdf/image/upload/v1790593677/GCash-MyQR-28092026184016.PNG.jpg',
   },
   maya: {
     label: 'Maya',
     number: '0945 440 8496',
     name: 'JESSRELL CUSTODIO',
+    tag: 'E-Wallet',
     qr: 'https://res.cloudinary.com/bvw3okdf/image/upload/v1790593882/myqr_1790592093301.jpg',
   },
   paypal: {
     label: 'PayPal',
     number: 'custodiojessrell07@gmail.com',
     name: 'Jessrell Custodio',
+    tag: 'E-Wallet',
     qr: 'https://res.cloudinary.com/bvw3okdf/image/upload/v1790594249/paypal_qr_1790592320029.png',
   },
   gotyme: {
     label: 'GoTyme',
     number: '015249157462',
     name: 'JESSRELL C.',
+    tag: 'Bank',
     qr: 'https://res.cloudinary.com/bvw3okdf/image/upload/v1790592841/Screenshot_20260928_183617_GoTyme_PH.jpg',
   },
   bpi: {
     label: 'BPI',
     number: '4069841679',
     name: 'JESSRELL C.',
+    tag: 'Bank',
     qr: 'https://res.cloudinary.com/bvw3okdf/image/upload/v1790594150/BPIQR_Jessrell.png',
   },
 };
@@ -50,12 +55,57 @@ const WALLET_INFO = {
 const WALLET_ID = 'XN-1010-0707-1007';
 const MEMBER_SINCE = 'OCTOBER 2026';
 
+/* ---------- QR component with skeleton loading ---------- */
+
+function QRWithSkeleton({ src, alt }) {
+  const [loaded, setLoaded] = useState(false);
+  const [errored, setErrored] = useState(false);
+
+  return (
+    <div className="qr-image-wrap">
+      {!loaded && !errored && (
+        <div className="qr-skeleton" aria-hidden="true">
+          <div className="qr-skeleton-shimmer" />
+          <div className="qr-skeleton-grid">
+            {Array.from({ length: 25 }).map((_, i) => (
+              <span key={i} className="qr-skeleton-cell" />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {errored ? (
+        <div className="qr-error">Failed to load QR</div>
+      ) : (
+        <img
+          src={src}
+          alt={alt}
+          className={`qr-image ${loaded ? 'loaded' : ''}`}
+          onLoad={() => setLoaded(true)}
+          onError={() => setErrored(true)}
+          loading="eager"
+          decoding="async"
+          draggable={false}
+        />
+      )}
+    </div>
+  );
+}
+
 export default function Credit() {
   const [type, setType] = useState('ewallet');
   const [method, setMethod] = useState(null);
   const [copied, setCopied] = useState(false);
 
   const selected = method ? WALLET_INFO[method] : null;
+
+  // Preload all QR images on mount → instant swap when opening
+  useEffect(() => {
+    Object.values(WALLET_INFO).forEach((m) => {
+      const img = new Image();
+      img.src = m.qr;
+    });
+  }, []);
 
   const copyToClipboard = async () => {
     if (!selected) return;
@@ -76,10 +126,10 @@ export default function Credit() {
         {!isFullView && (
           <motion.div
             key="list-view"
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -14 }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            initial={{ opacity: 0, y: 20, filter: 'blur(4px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, y: -20, filter: 'blur(4px)' }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
           >
             {/* Wallet Card Hero */}
             <motion.div
@@ -96,6 +146,10 @@ export default function Credit() {
                   <div className="chip-lines">
                     <span /><span /><span />
                   </div>
+                </div>
+                <div className="wallet-status">
+                  <span className="wallet-status-dot" />
+                  <span>Active</span>
                 </div>
               </div>
 
@@ -156,6 +210,9 @@ export default function Credit() {
                   >
                     <span className="method-bar" style={{ background: m.color }} />
                     <span className="method-name">{m.name}</span>
+                    <span className="method-tag">
+                      {WALLET_INFO[m.id].tag}
+                    </span>
                     <span className="method-arrow">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="9 18 15 12 9 6" />
@@ -172,10 +229,10 @@ export default function Credit() {
           <motion.div
             key={`qr-${method}`}
             className="qr-section full-page"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.35 }}
+            initial={{ opacity: 0, y: 16, filter: 'blur(4px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, y: -16, filter: 'blur(4px)' }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
           >
             <motion.div
               className="selected-brand"
@@ -183,10 +240,11 @@ export default function Credit() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             >
+              <span className="selected-tag">{selected.tag}</span>
               <h2 className="selected-label">{selected.label}</h2>
             </motion.div>
 
-            {/* Real QR image with pop animation */}
+            {/* QR with skeleton + corners */}
             <motion.div
               className="qr-wrapper"
               initial={{ opacity: 0, scale: 0.7, rotate: -4 }}
@@ -199,16 +257,22 @@ export default function Credit() {
                 delay: 0.05,
               }}
             >
-              <div className="qr-corner tl" />
-              <div className="qr-corner tr" />
-              <div className="qr-corner bl" />
-              <div className="qr-corner br" />
-              <img
-                src={selected.qr}
-                alt={`${selected.label} QR Code`}
-                className="qr-image"
-              />
+              <div className="qr-corner tl"><span /></div>
+              <div className="qr-corner tr"><span /></div>
+              <div className="qr-corner bl"><span /></div>
+              <div className="qr-corner br"><span /></div>
+
+              <QRWithSkeleton src={selected.qr} alt={`${selected.label} QR`} />
             </motion.div>
+
+            <motion.p
+              className="qr-hint"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.35, duration: 0.5 }}
+            >
+              Scan with {selected.label} app
+            </motion.p>
 
             <motion.div
               className="wallet-card"

@@ -50,9 +50,9 @@ function ProtectedShell() {
 
   if (loading) return null;
 
-  if (!isAuthed) {
-    return (
-      <AnimatePresence mode="wait">
+  return (
+    <AnimatePresence mode="wait">
+      {!isAuthed ? (
         <motion.div
           key={`login-${location.pathname}`}
           variants={pageVariants}
@@ -60,19 +60,26 @@ function ProtectedShell() {
           animate="animate"
           exit="exit"
           transition={pageTransition}
+          style={{ willChange: 'transform, opacity, filter' }}
         >
           <Login />
         </motion.div>
-      </AnimatePresence>
-    );
-  }
-
-  return (
-    <>
-      <Navbar />
-      <ScrollToTop />
-      <AnimatedRoutes />
-    </>
+      ) : (
+        <motion.div
+          key="app"
+          variants={pageVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          transition={pageTransition}
+          style={{ willChange: 'transform, opacity, filter' }}
+        >
+          <Navbar />
+          <ScrollToTop />
+          <AnimatedRoutes />
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
