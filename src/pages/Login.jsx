@@ -1,13 +1,16 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useToast } from '../components/Toast.jsx';
 import './Login.css';
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, attemptsLeft, lockoutUntil, maxAttempts } = useAuth();
+  const toast = useToast();
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [shake, setShake] = useState(false);
+  const [now, setNow] = useState(Date.now());
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -15,14 +18,31 @@ export default function Login() {
     inputRef.current?.focus();
   }, []);
 
+  // Live countdown during lockout
+  useEffect(() => {
+    if (!lockoutUntil) return;
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [lockoutUntil]);
+
+  const isLocked = lockoutUntil > now;
+  const lockedSeconds = isLocked ? Math.ceil((lockoutUntil - now) / 1000) : 0;
+  const lockedMins = Math.floor(lockedSeconds / 60);
+  const lockedSecs = lockedSeconds % 60;
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (isLocked) return;
+
     const result = login(code.trim());
     if (!result.ok) {
       setError(result.error);
       setShake(true);
       setCode('');
       setTimeout(() => setShake(false), 500);
+      toast.push(result.error, 'error');
+    } else {
+      toast.push('Welcome back', 'success');
     }
   };
 
@@ -66,12 +86,29 @@ export default function Login() {
             autoCorrect="off"
             autoCapitalize="off"
             spellCheck={false}
+            disabled={isLocked}
           />
 
-          {error && <p className="login-error">{error}</p>}
+          {isLocked && (
+            <p className="login-error locked">
+              Locked — retry in {lockedMins}:{String(lockedSecs).padStart(2, '0')}
+            </p>
+          )}
 
-          <button type="submit" className="login-btn" disabled={!code.trim()}>
-            Unlock Wallet
+          {!isLocked && error && <p className="login-error">{error}</p>}
+
+          {!isLocked && attemptsLeft < maxAttempts && attemptsLeft > 0 && !error && (
+            <p className="login-attempts">
+              {attemptsLeft} attempt{attemptsLeft !== 1 ? 's' : ''} remaining
+            </p>
+          )}
+
+          <button
+            type="submit"
+            className="login-btn"
+            disabled={!code.trim() || isLocked}
+          >
+            {isLocked ? `Locked (${lockedMins}:${String(lockedSecs).padStart(2, '0')})` : 'Unlock Wallet'}
           </button>
         </form>
       </motion.div>

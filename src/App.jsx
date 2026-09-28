@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
+import { ToastProvider } from './components/Toast.jsx';
 import CosmicBackground from './components/CosmicBackground.jsx';
 import NetworkBar from './components/NetworkBar.jsx';
 import ScrollToTop from './components/ScrollToTop.jsx';
@@ -60,7 +61,6 @@ function ProtectedShell() {
           animate="animate"
           exit="exit"
           transition={pageTransition}
-          style={{ willChange: 'transform, opacity, filter' }}
         >
           <Login />
         </motion.div>
@@ -72,7 +72,6 @@ function ProtectedShell() {
           animate="animate"
           exit="exit"
           transition={pageTransition}
-          style={{ willChange: 'transform, opacity, filter' }}
         >
           <Navbar />
           <ScrollToTop />
@@ -86,11 +85,13 @@ function ProtectedShell() {
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <CosmicBackground />
-        <NetworkBar />
-        <ProtectedShell />
-      </BrowserRouter>
+      <ToastProvider>
+        <BrowserRouter>
+          <CosmicBackground />
+          <NetworkBar />
+          <ProtectedShell />
+        </BrowserRouter>
+      </ToastProvider>
     </AuthProvider>
   );
 }

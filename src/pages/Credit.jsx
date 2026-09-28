@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useToast } from '../components/Toast.jsx';
+import { downloadQR, shareQR } from '../utils/qrActions.js';
 import './Credit.css';
 
 const METHODS = {
@@ -55,11 +57,16 @@ const WALLET_INFO = {
 const WALLET_ID = 'XN-1010-0707-1007';
 const MEMBER_SINCE = 'OCTOBER 2026';
 
-/* ---------- QR component with skeleton loading ---------- */
+/* ---------- QR with skeleton loading + watermark + copy protection ---------- */
 
-function QRWithSkeleton({ src, alt }) {
+function QRWithSkeleton({ src, alt, walletId }) {
   const [loaded, setLoaded] = useState(false);
   const [errored, setErrored] = useState(false);
+
+  // Copy protection
+  const blockContextMenu = (e) => e.preventDefault();
+  const blockDrag = (e) => e.preventDefault();
+  const blockTouchCallout = (e) => e.preventDefault();
 
   return (
     <div className="qr-image-wrap">
@@ -77,29 +84,47 @@ function QRWithSkeleton({ src, alt }) {
       {errored ? (
         <div className="qr-error">Failed to load QR</div>
       ) : (
-        <img
-          src={src}
-          alt={alt}
-          className={`qr-image ${loaded ? 'loaded' : ''}`}
-          onLoad={() => setLoaded(true)}
-          onError={() => setErrored(true)}
-          loading="eager"
-          decoding="async"
-          draggable={false}
-        />
+        <>
+          <img
+            src={src}
+            alt={alt}
+            className={`qr-image ${loaded ? 'loaded' : ''}`}
+            onLoad={() => setLoaded(true)}
+            onError={() => setErrored(true)}
+            loading="eager"
+            decoding="async"
+            draggable={false}
+            onContextMenu={blockContextMenu}
+            onDragStart={blockDrag}
+            onTouchStart={blockTouchCallout}
+          />
+
+          {/* Watermark overlay — visible only when image loaded */}
+          {loaded && (
+            <div className="qr-watermark" aria-hidden="true">
+              <div className="qr-watermark-brand">
+                <span className="qr-watermark-x">X</span>online
+              </div>
+              <div className="qr-watermark-id">{walletId}</div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
 }
 
 export default function Credit() {
+  const toast = useToast();
   const [type, setType] = useState('ewallet');
   const [method, setMethod] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [sharing, setSharing] = useState(false);
 
   const selected = method ? WALLET_INFO[method] : null;
 
-  // Preload all QR images on mount → instant swap when opening
+  // Preload all QR images
   useEffect(() => {
     Object.values(WALLET_INFO).forEach((m) => {
       const img = new Image();
@@ -112,10 +137,41 @@ export default function Credit() {
     try {
       await navigator.clipboard.writeText(selected.number);
       setCopied(true);
+      toast.push('Account number copied', 'success');
       setTimeout(() => setCopied(false), 1600);
     } catch {
-      /* ignore */
+      toast.push('Copy failed', 'error');
     }
+  };
+
+  const handleDownload = async () => {
+    if (!selected || downloading) return;
+    setDownloading(true);
+    const res = await downloadQR(
+      selected.qr,
+      `xonline-${method}-qr.png`
+    );
+    if (res.ok) toast.push('QR saved to downloads', 'success');
+    else toast.push(res.error || 'Download failed', 'error');
+    setDownloading(false);
+  };
+
+  const handleShare = async () => {
+    if (!selected || sharing) return;
+    setSharing(true);
+    const res = await shareQR(selected.qr, selected.label, selected.number);
+    if (res.ok) {
+      if (res.method === 'cancelled') {
+        // silent
+      } else if (res.method === 'download-fallback') {
+        toast.push('Share not supported — QR downloaded instead', 'info');
+      } else {
+        toast.push('Shared successfully', 'success');
+      }
+    } else {
+      toast.push(res.error || 'Share failed', 'error');
+    }
+    setSharing(false);
   };
 
   const isFullView = Boolean(method);
@@ -131,7 +187,6 @@ export default function Credit() {
             exit={{ opacity: 0, y: -20, filter: 'blur(4px)' }}
             transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
           >
-            {/* Wallet Card Hero */}
             <motion.div
               className="wallet-hero"
               initial={{ opacity: 0, y: 24, scale: 0.96 }}
@@ -143,9 +198,7 @@ export default function Credit() {
 
               <div className="wallet-hero-top">
                 <div className="wallet-chip">
-                  <div className="chip-lines">
-                    <span /><span /><span />
-                  </div>
+                  <div className="chip-lines"><span /><span /><span /></div>
                 </div>
                 <div className="wallet-status">
                   <span className="wallet-status-dot" />
@@ -170,13 +223,11 @@ export default function Credit() {
               </div>
             </motion.div>
 
-            {/* Section title */}
             <div className="section-head">
               <h2 className="section-title">Choose a method</h2>
               <p className="section-sub">Credit funds to your Xonline wallet</p>
             </div>
 
-            {/* Toggle */}
             <div className="toggle-group">
               <button
                 className={type === 'ewallet' ? 'active' : ''}
@@ -192,7 +243,6 @@ export default function Credit() {
               </button>
             </div>
 
-            {/* Method list */}
             <div className="method-list">
               <AnimatePresence mode="popLayout">
                 {METHODS[type].map((m, i) => (
@@ -210,9 +260,7 @@ export default function Credit() {
                   >
                     <span className="method-bar" style={{ background: m.color }} />
                     <span className="method-name">{m.name}</span>
-                    <span className="method-tag">
-                      {WALLET_INFO[m.id].tag}
-                    </span>
+                    <span className="method-tag">{WALLET_INFO[m.id].tag}</span>
                     <span className="method-arrow">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="9 18 15 12 9 6" />
@@ -244,25 +292,22 @@ export default function Credit() {
               <h2 className="selected-label">{selected.label}</h2>
             </motion.div>
 
-            {/* QR with skeleton + corners */}
             <motion.div
               className="qr-wrapper"
               initial={{ opacity: 0, scale: 0.7, rotate: -4 }}
               animate={{ opacity: 1, scale: 1, rotate: 0 }}
-              transition={{
-                type: 'spring',
-                stiffness: 220,
-                damping: 18,
-                mass: 0.8,
-                delay: 0.05,
-              }}
+              transition={{ type: 'spring', stiffness: 220, damping: 18, mass: 0.8, delay: 0.05 }}
             >
               <div className="qr-corner tl"><span /></div>
               <div className="qr-corner tr"><span /></div>
               <div className="qr-corner bl"><span /></div>
               <div className="qr-corner br"><span /></div>
 
-              <QRWithSkeleton src={selected.qr} alt={`${selected.label} QR`} />
+              <QRWithSkeleton
+                src={selected.qr}
+                alt={`${selected.label} QR`}
+                walletId={WALLET_ID}
+              />
             </motion.div>
 
             <motion.p
@@ -273,6 +318,42 @@ export default function Credit() {
             >
               Scan with {selected.label} app
             </motion.p>
+
+            {/* Share & Download row */}
+            <motion.div
+              className="qr-action-row"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <button
+                className="qr-action-btn"
+                onClick={handleShare}
+                disabled={sharing}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="18" cy="5" r="3" />
+                  <circle cx="6" cy="12" r="3" />
+                  <circle cx="18" cy="19" r="3" />
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                </svg>
+                <span>{sharing ? 'Sharing…' : 'Share'}</span>
+              </button>
+
+              <button
+                className="qr-action-btn"
+                onClick={handleDownload}
+                disabled={downloading}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                <span>{downloading ? 'Saving…' : 'Download'}</span>
+              </button>
+            </motion.div>
 
             <motion.div
               className="wallet-card"

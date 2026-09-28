@@ -116,3 +116,19 @@
 }
 
 .login-btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+
+.login-error.locked {
+  color: #ff8a3d;
+  font-weight: 600;
+}
+
+.login-attempts {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.code-input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
