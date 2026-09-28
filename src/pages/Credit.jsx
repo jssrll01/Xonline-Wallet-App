@@ -1,7 +1,5 @@
 import { useState } from 'react';
-import { QRCodeSVG } from 'qrcode.react';
 import { motion, AnimatePresence } from 'framer-motion';
-import ScreenshotWarning from '../components/ScreenshotWarning.jsx';
 import './Credit.css';
 
 const METHODS = {
@@ -17,15 +15,40 @@ const METHODS = {
 };
 
 const WALLET_INFO = {
-  gcash: { label: 'GCash', number: '0945 440 8496', name: 'JESSRELL C.' },
-  maya: { label: 'Maya', number: '0945 440 8496', name: 'JESSRELL CUSTODIO' },
-  paypal: { label: 'PayPal', number: 'custodiojessrell07@gmail.com', name: 'Jessrell Custodio' },
-  gotyme: { label: 'GoTyme', number: '1234 5678 9012', name: 'JESSRELL C.' },
-  bpi: { label: 'BPI', number: '1234 5678 9012', name: 'JESSRELL C.' },
+  gcash: {
+    label: 'GCash',
+    number: '0945 440 8496',
+    name: 'JESSRELL C.',
+    qr: 'https://res.cloudinary.com/bvw3okdf/image/upload/v1790593677/GCash-MyQR-28092026184016.PNG.jpg',
+  },
+  maya: {
+    label: 'Maya',
+    number: '0945 440 8496',
+    name: 'JESSRELL CUSTODIO',
+    qr: 'https://res.cloudinary.com/bvw3okdf/image/upload/v1790593882/myqr_1790592093301.jpg',
+  },
+  paypal: {
+    label: 'PayPal',
+    number: 'custodiojessrell07@gmail.com',
+    name: 'Jessrell Custodio',
+    qr: 'https://res.cloudinary.com/bvw3okdf/image/upload/v1790594249/paypal_qr_1790592320029.png',
+  },
+  gotyme: {
+    label: 'GoTyme',
+    number: '015249157462',
+    name: 'JESSRELL C.',
+    qr: 'https://res.cloudinary.com/bvw3okdf/image/upload/v1790592841/Screenshot_20260928_183617_GoTyme_PH.jpg',
+  },
+  bpi: {
+    label: 'BPI',
+    number: '4069841679',
+    name: 'JESSRELL C.',
+    qr: 'https://res.cloudinary.com/bvw3okdf/image/upload/v1790594150/BPIQR_Jessrell.png',
+  },
 };
 
-const WALLET_ID = 'XN-4021-8890-1174';
-const MEMBER_SINCE = 'MAR 2024';
+const WALLET_ID = 'XN-1010-0707-1007';
+const MEMBER_SINCE = 'OCTOBER 2026';
 
 export default function Credit() {
   const [type, setType] = useState('ewallet');
@@ -33,9 +56,6 @@ export default function Credit() {
   const [copied, setCopied] = useState(false);
 
   const selected = method ? WALLET_INFO[method] : null;
-  const qrValue = selected
-    ? `${selected.label}|${selected.number}|${selected.name}`
-    : '';
 
   const copyToClipboard = async () => {
     if (!selected) return;
@@ -81,7 +101,7 @@ export default function Credit() {
 
               <div className="wallet-hero-mid">
                 <p className="wallet-label">Xonline Wallet</p>
-                <p className="wallet-number">•••• •••• •••• 1174</p>
+                <p className="wallet-number">•••• •••• •••• 1007</p>
               </div>
 
               <div className="wallet-hero-bottom">
@@ -164,12 +184,9 @@ export default function Credit() {
               transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             >
               <h2 className="selected-label">{selected.label}</h2>
-              <span className="selected-sub">
-                <span className="live-dot" /> Ready to receive
-              </span>
             </motion.div>
 
-            {/* QR with pop animation */}
+            {/* Real QR image with pop animation */}
             <motion.div
               className="qr-wrapper"
               initial={{ opacity: 0, scale: 0.7, rotate: -4 }}
@@ -186,16 +203,12 @@ export default function Credit() {
               <div className="qr-corner tr" />
               <div className="qr-corner bl" />
               <div className="qr-corner br" />
-              <QRCodeSVG
-                value={qrValue}
-                size={240}
-                bgColor="#ffffff"
-                fgColor="#0a0e1a"
-                level="M"
+              <img
+                src={selected.qr}
+                alt={`${selected.label} QR Code`}
+                className="qr-image"
               />
             </motion.div>
-
-            <ScreenshotWarning active={true} />
 
             <motion.div
               className="wallet-card"

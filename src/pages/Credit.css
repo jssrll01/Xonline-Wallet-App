@@ -375,3 +375,21 @@
   .wallet-number { font-size: 1.1rem; letter-spacing: 2px; }
   .selected-label { font-size: 1.35rem; }
 }
+
+/* Real QR image inside the framed wrapper */
+.qr-image {
+  display: block;
+  width: 100%;
+  max-width: 240px;
+  height: auto;
+  border-radius: 12px;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Ensure wrapper centers the image nicely */
+.qr-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

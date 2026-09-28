@@ -35,22 +35,6 @@
   text-shadow: 0 0 20px var(--accent);
 }
 
-.login-icon {
-  width: 64px;
-  height: 64px;
-  margin: 0 auto 1.5rem;
-  border-radius: 20px;
-  background: linear-gradient(135deg, rgba(0, 217, 255, 0.15), rgba(0, 102, 255, 0.15));
-  border: 1px solid rgba(0, 217, 255, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--accent);
-  box-shadow: 0 10px 30px rgba(0, 217, 255, 0.2);
-}
-
-.login-icon svg { width: 30px; height: 30px; }
-
 .login-title {
   font-size: 1.5rem;
   font-weight: 700;
@@ -132,64 +116,3 @@
 }
 
 .login-btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
-
-.bio-section {
-  margin-top: 1.75rem;
-}
-
-.bio-divider {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1.25rem;
-  color: var(--text-secondary);
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-}
-
-.bio-divider::before,
-.bio-divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--border);
-}
-
-.bio-btn {
-  width: 100%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
-  padding: 1rem;
-  background: rgba(0, 217, 255, 0.08);
-  border: 1.5px solid rgba(0, 217, 255, 0.25);
-  border-radius: 14px;
-  color: var(--accent);
-  font-weight: 600;
-  font-size: 0.9rem;
-  transition: all 0.2s ease;
-}
-
-.bio-btn svg { width: 20px; height: 20px; }
-
-.bio-btn:hover:not(:disabled) {
-  background: rgba(0, 217, 255, 0.15);
-  border-color: rgba(0, 217, 255, 0.5);
-  transform: translateY(-1px);
-}
-
-.bio-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-.bio-forget {
-  margin-top: 0.75rem;
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: 0.75rem;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  padding: 0.25rem 0.5rem;
-}
-
-.bio-forget:hover { color: var(--danger); }

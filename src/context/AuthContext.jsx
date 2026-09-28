@@ -2,9 +2,8 @@ import { createContext, useContext, useEffect, useRef, useState, useCallback } f
 
 const AuthContext = createContext(null);
 const STORAGE_KEY = 'xonline_auth';
-const BIO_KEY = 'xonline_bio_cred';
 
-// Access code — set here directly (no env required)
+// Access code — set here directly
 const ACCESS_CODE = '1010';
 
 const IDLE_MS = 2 * 60 * 1000;
@@ -12,25 +11,7 @@ const IDLE_MS = 2 * 60 * 1000;
 export function AuthProvider({ children }) {
   const [isAuthed, setIsAuthed] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [bioAvailable, setBioAvailable] = useState(false);
   const idleTimer = useRef(null);
-
-  useEffect(() => {
-    const check = async () => {
-      try {
-        if (
-          window.PublicKeyCredential &&
-          typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable === 'function'
-        ) {
-          const ok = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-          setBioAvailable(ok);
-        }
-      } catch {
-        setBioAvailable(false);
-      }
-    };
-    check();
-  }, []);
 
   useEffect(() => {
     const saved = sessionStorage.getItem(STORAGE_KEY);
@@ -73,78 +54,8 @@ export function AuthProvider({ children }) {
     return { ok: false, error: 'Invalid access code' };
   }, []);
 
-  const registerBiometric = useCallback(async (label = 'Xonline User') => {
-    if (!bioAvailable || !window.PublicKeyCredential) {
-      return { ok: false, error: 'Biometrics not available on this device' };
-    }
-    try {
-      const challenge = new Uint8Array(32);
-      crypto.getRandomValues(challenge);
-      const userId = new Uint8Array(16);
-      crypto.getRandomValues(userId);
-      const cred = await navigator.credentials.create({
-        publicKey: {
-          challenge,
-          rp: { name: 'Xonline Wallet' },
-          user: { id: userId, name: label, displayName: label },
-          pubKeyCredParams: [
-            { type: 'public-key', alg: -7 },
-            { type: 'public-key', alg: -257 },
-          ],
-          authenticatorSelection: {
-            authenticatorAttachment: 'platform',
-            userVerification: 'required',
-            residentKey: 'preferred',
-          },
-          timeout: 60000,
-          attestation: 'none',
-        },
-      });
-      const b64 = btoa(String.fromCharCode(...new Uint8Array(cred.rawId)));
-      sessionStorage.setItem(BIO_KEY, b64);
-      return { ok: true };
-    } catch (e) {
-      return { ok: false, error: e?.message || 'Biometric setup failed' };
-    }
-  }, [bioAvailable]);
-
-  const hasBiometric = !!sessionStorage.getItem(BIO_KEY);
-
-  const loginWithBiometric = useCallback(async () => {
-    const stored = sessionStorage.getItem(BIO_KEY);
-    if (!stored) return { ok: false, error: 'No biometric credential registered' };
-    try {
-      const rawId = Uint8Array.from(atob(stored), (c) => c.charCodeAt(0));
-      const challenge = new Uint8Array(32);
-      crypto.getRandomValues(challenge);
-      await navigator.credentials.get({
-        publicKey: {
-          challenge,
-          timeout: 60000,
-          userVerification: 'required',
-          allowCredentials: [{ id: rawId, type: 'public-key', transports: ['internal'] }],
-        },
-      });
-      sessionStorage.setItem(STORAGE_KEY, 'granted');
-      setIsAuthed(true);
-      return { ok: true };
-    } catch (e) {
-      return { ok: false, error: e?.message || 'Biometric unlock failed' };
-    }
-  }, []);
-
-  const removeBiometric = useCallback(() => {
-    sessionStorage.removeItem(BIO_KEY);
-  }, []);
-
   return (
-    <AuthContext.Provider
-      value={{
-        isAuthed, loading, login, logout,
-        bioAvailable, hasBiometric,
-        registerBiometric, loginWithBiometric, removeBiometric,
-      }}
-    >
+    <AuthContext.Provider value={{ isAuthed, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
